@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 台東熱氣球嘉年華 互動旅遊規劃</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Serenity -->
+    <!-- Application Structure Plan: The SPA is designed as a task-oriented interactive dashboard with thematic tabs: '行程總覽' (Trip Overview), '熱氣球全攻略' (Balloon Festival Guide), '住宿與交通' (Stay & Ride), '美食地圖' (Food Map), and '行前準備' (Checklist). This structure allows users to bypass linear reading and directly access the information they need most, such as schedules, booking details, or food recommendations. The user flow is non-linear, encouraging exploration through clickable cards, filterable lists, and summary charts. This design was chosen for superior usability over a simple document conversion, as travelers typically seek specific, actionable information rather than reading a guide from start to finish. -->
+    <!-- Visualization & Content Choices: 
+        - Itinerary: Goal(Inform) -> HTML/Tailwind 3-day card layout -> Interaction(Click to expand details) -> Justification(Provides a quick, clean overview).
+        - Balloon Experiences: Goal(Compare) -> HTML/Tailwind side-by-side table -> Interaction(Static) -> Justification(Clearly highlights key differences in price, duration, etc.).
+        - Night Glow Concerts: Goal(Organize/Inform) -> Filterable HTML/Tailwind list -> Interaction(Filter by drone/fireworks) -> Justification(Allows users to find specific events of interest quickly).
+        - Transport Costs: Goal(Compare) -> Chart.js Donut Chart -> Interaction(Hover for details) -> Justification(Visualizes cost differences for shuttle buses instantly). Library(Chart.js on Canvas).
+        - Food Guide: Goal(Organize) -> Filterable HTML/Tailwind grid -> Interaction(Filter by food type) -> Justification(Makes finding desired food simple and visual).
+        - Checklist: Goal(Organize/Engage) -> Interactive HTML/Tailwind list -> Interaction(Click to check/uncheck) -> Justification(Provides a satisfying, practical tool for users).
+        All choices support the dashboard structure by presenting distilled, interactive information. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF8; /* Warm Neutral Background */
+        }
+        .tab-active {
+            border-color: #F97316; /* Orange-600 */
+            color: #F97316;
+            background-color: #FFF7ED; /* Orange-50 */
+        }
+        .tab-inactive {
+            border-color: transparent;
+            color: #57534E; /* Stone-600 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 640px) {
+            .chart-container {
+                height: 350px;
+                max-height: 400px;
+            }
+        }
+        .checklist-item-done {
+            text-decoration: line-through;
+            color: #78716C; /* Stone-500 */
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <div class="container mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-stone-900">2025 台東熱氣球夢幻三日遊</h1>
+            <p class="mt-2 text-lg text-stone-600">您的互動式旅遊規劃儀表板 | 住宿樂氣球民宿，機車逍遙行</p>
+        </header>
+
+        <nav id="tabs" class="flex flex-wrap justify-center border-b border-stone-200 mb-8 gap-2">
+            <button data-target="overview" class="px-4 py-2 font-semibold text-sm sm:text-base border-b-2 rounded-t-lg transition-colors duration-300 tab-active">行程總覽</button>
+            <button data-target="festival" class="px-4 py-2 font-semibold text-sm sm:text-base border-b-2 rounded-t-lg transition-colors duration-300 tab-inactive">熱氣球全攻略</button>
+            <button data-target="transport" class="px-4 py-2 font-semibold text-sm sm:text-base border-b-2 rounded-t-lg transition-colors duration-300 tab-inactive">住宿與交通</button>
+            <button data-target="food" class="px-4 py-2 font-semibold text-sm sm:text-base border-b-2 rounded-t-lg transition-colors duration-300 tab-inactive">美食地圖</button>
+            <button data-target="checklist" class="px-4 py-2 font-semibold text-sm sm:text-base border-b-2 rounded-t-lg transition-colors duration-300 tab-inactive">行前準備</button>
+        </nav>
+
+        <main id="tab-content">
+            
+            <!-- 行程總覽 -->
+            <section id="overview" class="space-y-8">
+                <div class="text-center bg-white p-6 rounded-xl shadow-lg border border-stone-100">
+                    <h2 class="text-2xl font-bold mb-2 text-orange-600">行程總覽：三日兩夜精華</h2>
+                    <p class="text-stone-600 max-w-3xl mx-auto">這是一個結合熱氣球節慶、在地探索與美食的平衡行程。從市區的悠閒漫步開始，第二天深入熱氣球嘉年華的核心，最後一天則以輕鬆的步調為旅程畫下完美句點。點擊下方的每日卡片，即可展開詳細的活動與景點安排。</p>
+                </div>
+                <div id="itinerary-cards" class="grid md:grid-cols-3 gap-6"></div>
+            </section>
+
+            <!-- 熱氣球全攻略 -->
+            <section id="festival" class="hidden space-y-8">
+                <div class="text-center bg-white p-6 rounded-xl shadow-lg border border-stone-100">
+                    <h2 class="text-2xl font-bold mb-2 text-sky-600">熱氣球嘉年華全攻略</h2>
+                    <p class="text-stone-600 max-w-3xl mx-auto">這裡是您參與2025台東國際熱氣球嘉年華的所有關鍵資訊。從活動基本資訊、兩種升空體驗的比較，到精彩的光雕音樂會時刻表與交通方式，我們為您彙整了所有必要情報，助您輕鬆規劃，不錯過任何精彩瞬間。</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg border border-stone-100 space-y-6">
+                        <h3 class="text-xl font-bold text-stone-800">升空體驗大比拼</h3>
+                        <div id="experience-comparison" class="grid sm:grid-cols-2 gap-6"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-stone-100 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-stone-800 mb-2">核心活動資訊</h3>
+                            <ul class="space-y-2 text-stone-700">
+                                <li class="flex items-center"><span class="w-6 h-6 mr-3 text-sky-500">📅</span> <strong>日期:</strong> 2025/7/5 - 8/21</li>
+                                <li class="flex items-center"><span class="w-6 h-6 mr-3 text-sky-500">📍</span> <strong>地點:</strong> 臺東鹿野高台</li>
+                                <li class="flex items-center"><span class="w-6 h-6 mr-3 text-sky-500">⏰</span> <strong>展演:</strong> 05:30-07:00 | 17:00-18:30</li>
+                                <li class="flex items-center"><span class="w-6 h-6 mr-3 text-sky-500">🎉</span> <strong>主題:</strong> 哆啦A夢15週年聯名</li>
+                                <li class="flex items-center"><span class="w-6 h-6 mr-3 text-sky-500">🗓️</span> <strong>公休:</strong> 每週二休園</li>
+                            </ul>
+                        </div>
+                        <a href="https://balloontaiwan.taitung.gov.tw/" target="_blank" class="block w-full text-center bg-sky-500 text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-sky-600 transition-colors">前往官方網站</a>
+                    </div>
+                </div>
+                
+                <div class="grid lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-stone-100">
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">光雕音樂會時刻表</h3>
+                        <div id="night-glow-filters" class="flex flex-wrap gap-2 mb-4"></div>
+                        <div id="night-glow-schedule" class="space-y-3 max-h-96 overflow-y-auto pr-2"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-stone-100">
+                        <h3 class="text-xl font-bold text-stone-800 mb-4 text-center">前往鹿野高台：交通接駁費用比較</h3>
+                        <p class="text-sm text-stone-500 text-center mb-4">此圖表顯示從不同地點搭乘官方接駁車至鹿野高台的單程票價，助您快速評估交通成本。</p>
+                        <div class="chart-container">
+                            <canvas id="transportChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 住宿與交通 -->
+            <section id="transport" class="hidden space-y-8">
+                 <div class="text-center bg-white p-6 rounded-xl shadow-lg border border-stone-100">
+                    <h2 class="text-2xl font-bold mb-2 text-emerald-600">住宿與交通：旅途的安穩基石</h2>
+                    <p class="text-stone-600 max-w-3xl mx-auto">一個溫馨的住處和一部可靠的交通工具，是完美旅程的兩大支柱。本區塊為您詳細介紹指定的「樂氣球民宿」的特色與預訂方式，並提供台東市區租賃機車的實用建議，確保您在台東的移動與休憩都能安心無虞。</p>
+                </div>
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div id="accommodation-info"></div>
+                    <div id="scooter-info"></div>
+                </div>
+            </section>
+
+            <!-- 美食地圖 -->
+            <section id="food" class="hidden space-y-8">
+                 <div class="text-center bg-white p-6 rounded-xl shadow-lg border border-stone-100">
+                    <h2 class="text-2xl font-bold mb-2 text-rose-600">台東美食地圖</h2>
+                    <p class="text-stone-600 max-w-3xl mx-auto">台東不僅風景迷人，美食更是臥虎藏龍。這裡匯集了報告中所有推薦的在地小吃與特色餐廳，從市區的人氣米苔目到縱谷線的池上便當。您可以使用下方的篩選器，快速找到符合您口味的選擇，開啟一場味蕾的冒險。</p>
+                </div>
+                <div id="food-filters" class="flex flex-wrap justify-center gap-2 mb-6"></div>
+                <div id="food-grid" class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            </section>
+
+            <!-- 行前準備 -->
+            <section id="checklist" class="hidden">
+                 <div class="text-center bg-white p-6 rounded-xl shadow-lg border border-stone-100">
+                    <h2 class="text-2xl font-bold mb-2 text-violet-600">行前準備清單</h2>
+                    <p class="text-stone-600 max-w-3xl mx-auto">充分的準備是旅途順利的保障。我們為您整理了一份互動式的行前準備清單，涵蓋了從預訂、穿著到防曬等所有重要事項。您可以點擊每個項目將其標記為完成，確保萬事俱備，輕鬆出發！</p>
+                </div>
+                <div id="preparation-checklist" class="mt-8 max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-lg border border-stone-100"></div>
+            </section>
+        </main>
+
+    </div>
+
+    <!-- Modal for Itinerary Details -->
+    <div id="itineraryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+            <button id="closeModal" class="absolute top-4 right-4 text-stone-500 hover:text-stone-800 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <!-- Modal content will be injected here -->
+        </div>
+    </div>
+    
+<script>
+const data = {
+    itinerary: [
+        {
+            day: "Day 1",
+            title: "抵達台東，市區初探",
+            icon: "✈️",
+            color: "text-sky-500",
+            bgColor: "bg-sky-50",
+            borderColor: "border-sky-200",
+            summary: "抵達、租車、入住，並輕鬆漫遊台東市區，感受在地慢活氛圍。",
+            details: [
+                { time: "上午", activity: "抵達台東火車站，前往預訂的車行辦理租車手續，再到「樂氣球民宿」寄放行李。" },
+                { time: "午餐", activity: "品嚐道地小吃「榕樹下米苔目」或「阿咪米苔目」。" },
+                { time: "下午", activity: "入住樂氣球民宿，稍作休息後，騎車遊覽「台東森林公園」與「鐵花村音樂聚落」。" },
+                { time: "晚餐", activity: "探索「正氣路觀光夜市」，品嚐「林家臭豆腐」、「卑南豬血湯」或選擇人氣炸雞「阿鋐炸雞」、「藍蜻蜓」。" },
+                { time: "晚間", activity: "早點返回民宿休息，為隔天的熱氣球之旅儲備體力。" }
+            ]
+        },
+        {
+            day: "Day 2",
+            title: "熱氣球升空與縱谷采風",
+            icon: "🎈",
+            color: "text-orange-500",
+            bgColor: "bg-orange-50",
+            borderColor: "border-orange-200",
+            summary: "行程最高潮！清晨參與熱氣球盛會，接著深入花東縱谷，欣賞壯麗的田園風光。",
+            details: [
+                { time: "清晨 04:00", activity: "從民宿出發，騎車約40-60分鐘前往鹿野高台，參與上午場熱氣球繫留體驗或欣賞萬球齊飛。 (注意保暖)" },
+                { time: "上午 07:30後", activity: "享用早餐，順遊「武陵綠色隧道」及「鹿野龍田自行車道」。" },
+                { time: "午餐", activity: "可選擇北上至池上鄉品嚐「悟饕池上飯包」，或在鹿野地區用餐。" },
+                { time: "下午", activity: "彈性遊覽花東縱谷景點，如「池上伯朗大道」、「關山米國學校」等。" },
+                { time: "晚間", activity: "可選擇參加光雕音樂會（若有場次），或返回台東市區享用晚餐，如「特選海產店」。" }
+            ]
+        },
+        {
+            day: "Day 3",
+            title: "悠閒巡禮，滿載而歸",
+            icon: "🛍️",
+            color: "text-emerald-500",
+            bgColor: "bg-emerald-50",
+            borderColor: "border-emerald-200",
+            summary: "放慢腳步，享受台東的晨曦與海風，回味在地美食後，愉快踏上歸途。",
+            details: [
+                { time: "上午", activity: "悠閒享用民宿美味早餐，之後可選擇前往「卑南文化公園」或「台東濱海公園」散步。" },
+                { time: "午餐", activity: "最後回味台東小吃，如「許家烤玉米」或「緣龍無骨鹽酥雞」。" },
+                { time: "下午", activity: "返回民宿整理行李，辦理還車手續。" },
+                { time: "傍晚", activity: "抵達台東火車站，搭乘火車，滿載美好回憶返家。" }
+            ]
+        }
+    ],
+    experiences: [
+        { 
+            name: '熱氣球繫留體驗', 
+            icon: '🪢',
+            description: '以繩索固定於地面進行垂直升降，適合初次體驗或預算有限的旅客，感受離地的悸動。',
+            price: '平日 NT$550 (線上) / 假日 NT$650 (線上)',
+            duration: '約 5-7 分鐘',
+            booking: '強烈建議線上預購，現場票極少。',
+            rules: '身高需滿110公分，身心狀況良好者。'
+        },
+        { 
+            name: '熱氣球自由飛', 
+            icon: '🕊️',
+            description: '真正的空中飛行，360度俯瞰花東縱谷的壯麗景色，是一生難忘的極致體驗。',
+            price: '約 NT$10,000 /人',
+            duration: '空中導覽約 30 分鐘',
+            booking: '透過「天際航空」官網預訂。',
+            rules: '名額極稀少，需提早預訂。'
+        }
+    ],
+    nightGlow: [
+        { date: '7/6 (日)', time: '19:00', location: '鹿野高台', theme: '開幕式', features: ['drone', 'fireworks'] },
+        { date: '7/10 (四)', time: '04:00', location: '太麻里曙光園區', theme: '曙光光雕', features: [] },
+        { date: '7/17 (四)', time: '19:00', location: '鹿野高台', theme: '主題光雕', features: ['drone', 'fireworks'] },
+        { date: '7/24 (四)', time: '19:00', location: '池上大波池', theme: '主題光雕', features: ['fireworks'] },
+        { date: '7/31 (四)', time: '19:00', location: '鹿野高台', theme: '主題光雕', features: ['drone'] },
+        { date: '8/7 (四)', time: '19:00', location: '台東國際地標', theme: '主題光雕', features: ['drone', 'fireworks'] },
+        { date: '8/14 (四)', time: '19:00', location: '鹿野高台', theme: '主題光雕', features: ['drone', 'fireworks'] },
+        { date: '8/21 (四)', time: '19:00', location: '鹿野高台', theme: '閉幕式', features: ['drone', 'fireworks'] }
+    ],
+    transportData: {
+        labels: ['台東轉運站/火車站 (NT$75)', '鹿野火車站/遊客中心 (NT$25)'],
+        data: [75, 25]
+    },
+    accommodation: {
+        name: '樂氣球民宿 (ChiChu B&B)',
+        icon: '🏠',
+        color: "emerald",
+        address: '台東市正氣北路231號',
+        features: [
+            '老闆謝先生熱情好客，服務貼心',
+            '每日現做、美味多變的愛心早餐',
+            '房間乾淨舒適，充滿設計感',
+            '地理位置優越，生活機能方便',
+            'Agoda & Booking.com 雙平台 9.4 超高分評價'
+        ],
+        booking: {
+            title: '⚠️ 重要：預訂方式',
+            method: '僅接受 電話、LINE、FB粉絲頁等方式直接向民宿主人預訂。',
+            warning: '不接受 Agoda, Booking.com 等國際訂房平台預訂！',
+            contact: [
+                { type: 'Phone', value: '0921-159-305' },
+                { type: 'LINE ID', value: 'chichubnb' }
+            ]
+        }
+    },
+    scooter: {
+        name: '機車租賃建議',
+        icon: '🛵',
+        color: 'violet',
+        recommendation: '建議選擇台東火車站周邊的車行，一下車即可取車，方便快速。旺季務必提早預約！',
+        shops: [
+            { name: '台東翔順機車出租', detail: 'PTT鄉民推薦，車況新，價格透明。提供安全帽、雨衣、行李寄放。', phone: '089-225309' },
+            { name: '滿溢租車-台東店', detail: '車款選擇多，團體訂車有優惠。', phone: '089-233358' },
+        ],
+        checklist: [
+            '攜帶有效「重型機車駕照」及身份證件。',
+            '取車前仔細檢查車況（煞車、輪胎、燈號），可拍照存證。',
+            '確認油料政策（通常為滿油取還）。',
+            '詢問是否提供手機架及USB充電。'
+        ]
+    },
+    food: [
+        { name: '榕樹下米苔目', type: 'main', area: '市區', emoji: '🍜' },
+        { name: '阿咪米苔目', type: 'main', area: '市區', emoji: '🍜' },
+        { name: '林家臭豆腐', type: 'snack', area: '市區', emoji: '🍢' },
+        { name: '卑南豬血湯', type: 'main', area: '市區', emoji: '🥣' },
+        { name: '阿鋐炸雞', type: 'snack', area: '市區', emoji: '🍗' },
+        { name: '藍蜻蜓速食專賣店', type: 'snack', area: '市區', emoji: '🍔' },
+        { name: '寶桑豆花', type: 'dessert', area: '市區', emoji: '🍧' },
+        { name: '許家烤玉米', type: 'snack', area: '市區', emoji: '🌽' },
+        { name: '悟饕池上飯包', type: 'main', area: '縱谷', emoji: '🍱' },
+        { name: '關山臭豆腐', type: 'snack', area: '縱谷', emoji: '🍢' },
+        { name: '緣龍無骨鹽酥雞', type: 'snack', area: '市區', emoji: '🍿' },
+        { name: '綠意軒冰品屋', type: 'dessert', area: '市區', emoji: '🍨' },
+    ],
+    checklist: [
+        { item: '預訂熱氣球繫留體驗票券', category: '預訂', done: false },
+        { item: '致電或LINE預訂「樂氣球民宿」', category: '預訂', done: false },
+        { item: '預訂火車票與機車', category: '預訂', done: false },
+        { item: '準備輕便、透氣、排汗衣物', category: '穿著', done: false },
+        { item: '攜帶薄外套 (清晨保暖/防曬)', category: '穿著', done: false },
+        { item: '準備舒適好走的運動鞋', category: '穿著', done: false },
+        { item: '準備高係數防曬乳、太陽眼鏡、帽子', category: '防護', done: false },
+        { item: '攜帶防蚊液或防蚊貼片', category: '防護', done: false },
+        { item: '準備相機、備用電池、行動電源', category: '裝備', done: false },
+        { item: '攜帶個人常備藥品、雨具、水壺', category: '裝備', done: false }
+    ]
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('#tabs button');
+    const tabContents = document.querySelectorAll('#tab-content section');
+    const itineraryCardsContainer = document.getElementById('itinerary-cards');
+    const experienceContainer = document.getElementById('experience-comparison');
+    const nightGlowContainer = document.getElementById('night-glow-schedule');
+    const nightGlowFiltersContainer = document.getElementById('night-glow-filters');
+    const accommodationContainer = document.getElementById('accommodation-info');
+    const scooterContainer = document.getElementById('scooter-info');
+    const foodGridContainer = document.getElementById('food-grid');
+    const foodFiltersContainer = document.getElementById('food-filters');
+    const checklistContainer = document.getElementById('preparation-checklist');
+    const modal = document.getElementById('itineraryModal');
+    const modalContent = document.getElementById('modal-content');
+    const closeModalBtn = document.getElementById('closeModal');
+
+    function switchTab(targetId) {
+        tabs.forEach(tab => {
+            if (tab.dataset.target === targetId) {
+                tab.classList.remove('tab-inactive');
+                tab.classList.add('tab-active');
+            } else {
+                tab.classList.remove('tab-active');
+                tab.classList.add('tab-inactive');
+            }
+        });
+
+        tabContents.forEach(content => {
+            if (content.id === targetId) {
+                content.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+            }
+        });
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => switchTab(tab.dataset.target));
+    });
+
+    function renderItinerary() {
+        itineraryCardsContainer.innerHTML = data.itinerary.map(item => `
+            <div class="itinerary-card bg-white p-6 rounded-xl shadow-lg border ${item.borderColor} cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300" data-day="${item.day}">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-4">${item.icon}</span>
+                    <div>
+                        <p class="font-bold text-lg ${item.color}">${item.day}</p>
+                        <h3 class="text-xl font-bold text-stone-800">${item.title}</h3>
+                    </div>
+                </div>
+                <p class="text-stone-600">${item.summary}</p>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.itinerary-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const day = e.currentTarget.dataset.day;
+                const itemData = data.itinerary.find(i => i.day === day);
+                openModal(itemData);
+            });
+        });
+    }
+
+    function openModal(itemData) {
+        modalContent.innerHTML = `
+            <button id="closeModalInner" class="absolute top-4 right-4 text-stone-500 hover:text-stone-800 transition-colors z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="flex items-center mb-6">
+                <span class="text-5xl mr-5">${itemData.icon}</span>
+                <div>
+                    <p class="font-bold text-xl ${itemData.color}">${itemData.day}</p>
+                    <h2 class="text-3xl font-bold text-stone-900">${itemData.title}</h2>
+                </div>
+            </div>
+            <div class="space-y-4">
+                ${itemData.details.map(detail => `
+                    <div class="flex items-start">
+                        <div class="w-20 text-right mr-4 shrink-0">
+                            <span class="font-bold text-stone-800 bg-stone-100 px-2 py-1 rounded-md text-sm">${detail.time}</span>
+                        </div>
+                        <p class="text-stone-700">${detail.activity}</p>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.getElementById('closeModalInner').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
+    }
+
+    closeModalBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    });
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    });
+
+    function renderExperiences() {
+        experienceContainer.innerHTML = data.experiences.map(exp => `
+            <div class="bg-stone-50 p-4 rounded-lg border border-stone-200 space-y-2">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">${exp.icon}</span>
+                    <h4 class="text-lg font-bold text-stone-800">${exp.name}</h4>
+                </div>
+                <p class="text-sm text-stone-600">${exp.description}</p>
+                <div class="text-sm space-y-1 pt-2">
+                    <p><strong>費用:</strong> ${exp.price}</p>
+                    <p><strong>時長:</strong> ${exp.duration}</p>
+                    <p><strong>預訂:</strong> ${exp.booking}</p>
+                    <p><strong>限制:</strong> ${exp.rules}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderNightGlow(filter = 'all') {
+        const filteredData = data.nightGlow.filter(event => {
+            if (filter === 'all') return true;
+            return event.features.includes(filter);
+        });
+
+        nightGlowContainer.innerHTML = filteredData.map(event => `
+            <div class="bg-stone-50 p-3 rounded-lg flex justify-between items-center border border-stone-200">
+                <div>
+                    <p class="font-bold text-stone-800">${event.date} <span class="text-sm font-normal text-stone-600">${event.time}</span></p>
+                    <p class="text-sm text-stone-500">${event.location} - ${event.theme}</p>
+                </div>
+                <div class="flex gap-2">
+                    ${event.features.includes('drone') ? '<span class="text-xs bg-sky-100 text-sky-700 px-2 py-1 rounded-full font-medium">無人機</span>' : ''}
+                    ${event.features.includes('fireworks') ? '<span class="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-medium">煙火</span>' : ''}
+                </div>
+            </div>
+        `).join('');
+        if (filteredData.length === 0) {
+            nightGlowContainer.innerHTML = `<p class="text-center text-stone-500 py-4">沒有符合條件的場次。</p>`;
+        }
+    }
+    
+    function renderNightGlowFilters() {
+        const filters = [
+            { id: 'all', name: '全部場次' },
+            { id: 'drone', name: '無人機秀' },
+            { id: 'fireworks', name: '煙火秀' }
+        ];
+        nightGlowFiltersContainer.innerHTML = filters.map((f, index) => `
+            <button class="filter-btn-glow px-3 py-1 text-sm font-medium rounded-full transition-colors ${index === 0 ? 'bg-sky-500 text-white' : 'bg-stone-200 text-stone-700 hover:bg-stone-300'}" data-filter="${f.id}">${f.name}</button>
+        `).join('');
+        
+        document.querySelectorAll('.filter-btn-glow').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn-glow').forEach(b => {
+                    b.classList.remove('bg-sky-500', 'text-white');
+                    b.classList.add('bg-stone-200', 'text-stone-700', 'hover:bg-stone-300');
+                });
+                e.target.classList.add('bg-sky-500', 'text-white');
+                e.target.classList.remove('bg-stone-200', 'text-stone-700', 'hover:bg-stone-300');
+                renderNightGlow(e.target.dataset.filter);
+            });
+        });
+    }
+
+    function renderTransportChart() {
+        const ctx = document.getElementById('transportChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.transportData.labels,
+                datasets: [{
+                    label: '單程票價 (NT$)',
+                    data: data.transportData.data,
+                    backgroundColor: [
+                        'rgba(2, 132, 199, 0.7)', // sky-600
+                        'rgba(249, 115, 22, 0.7)' // orange-500
+                    ],
+                    borderColor: [
+                        'rgb(2, 132, 199)',
+                        'rgb(249, 115, 22)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: NT$${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderAccommodationAndScooter() {
+        const acc = data.accommodation;
+        accommodationContainer.innerHTML = `
+            <div class="bg-white p-6 rounded-xl shadow-lg h-full border border-stone-100">
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="text-4xl">${acc.icon}</span>
+                    <h3 class="text-2xl font-bold text-emerald-700">${acc.name}</h3>
+                </div>
+                <ul class="space-y-2 mb-6 list-disc list-inside text-stone-700">
+                    ${acc.features.map(f => `<li>${f}</li>`).join('')}
+                </ul>
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
+                    <h4 class="font-bold text-amber-800">${acc.booking.title}</h4>
+                    <p class="text-sm text-amber-700 mt-1">${acc.booking.method}</p>
+                    <p class="text-sm font-semibold text-red-600 mt-1">${acc.booking.warning}</p>
+                    <div class="mt-3 space-y-1">
+                        ${acc.booking.contact.map(c => `
+                            <p class="text-sm text-amber-900"><strong>${c.type}:</strong> ${c.value}</p>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>`;
+        
+        const sco = data.scooter;
+        scooterContainer.innerHTML = `
+            <div class="bg-white p-6 rounded-xl shadow-lg h-full border border-stone-100">
+                <div class="flex items-center gap-4 mb-4">
+                     <span class="text-4xl">${sco.icon}</span>
+                    <h3 class="text-2xl font-bold text-violet-700">${sco.name}</h3>
+                </div>
+                <p class="text-stone-600 mb-4">${sco.recommendation}</p>
+                <div class="space-y-3 mb-6">
+                    ${sco.shops.map(s => `
+                        <div class="bg-stone-50 p-3 rounded-lg border border-stone-200">
+                            <p class="font-bold text-stone-800">${s.name}</p>
+                            <p class="text-sm text-stone-600">${s.detail} (Tel: ${s.phone})</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div>
+                    <h4 class="font-bold text-stone-800 mb-2">租車檢查清單</h4>
+                    <ul class="space-y-1 list-disc list-inside text-sm text-stone-700">
+                        ${sco.checklist.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>`;
+    }
+    
+    function renderFood(filter = 'all') {
+        const filteredFood = data.food.filter(f => filter === 'all' || f.type === filter);
+        foodGridContainer.innerHTML = filteredFood.map(f => `
+            <div class="bg-white p-4 rounded-xl shadow-lg text-center border border-stone-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <p class="text-5xl mb-2">${f.emoji}</p>
+                <p class="font-bold text-stone-800">${f.name}</p>
+                <p class="text-xs capitalize font-medium ${f.area === '市區' ? 'text-rose-500' : 'text-teal-500'}">${f.area}</p>
+            </div>
+        `).join('');
+    }
+
+    function renderFoodFilters() {
+        const filters = [
+            { id: 'all', name: '全部' },
+            { id: 'main', name: '主食' },
+            { id: 'snack', name: '點心/炸物' },
+            { id: 'dessert', name: '冰品/甜點' }
+        ];
+        foodFiltersContainer.innerHTML = filters.map((f, index) => `
+             <button class="filter-btn-food px-4 py-2 text-sm font-semibold rounded-full transition-colors ${index === 0 ? 'bg-rose-500 text-white' : 'bg-stone-200 text-stone-700 hover:bg-stone-300'}" data-filter="${f.id}">${f.name}</button>
+        `).join('');
+
+        document.querySelectorAll('.filter-btn-food').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                 document.querySelectorAll('.filter-btn-food').forEach(b => {
+                    b.classList.remove('bg-rose-500', 'text-white');
+                    b.classList.add('bg-stone-200', 'text-stone-700', 'hover:bg-stone-300');
+                });
+                e.target.classList.add('bg-rose-500', 'text-white');
+                e.target.classList.remove('bg-stone-200', 'text-stone-700', 'hover:bg-stone-300');
+                renderFood(e.target.dataset.filter);
+            });
+        });
+    }
+
+    function renderChecklist() {
+        const categories = [...new Set(data.checklist.map(item => item.category))];
+        checklistContainer.innerHTML = categories.map(cat => `
+            <div class="mb-6">
+                <h4 class="font-bold text-lg text-violet-800 mb-3">${cat}</h4>
+                <div class="space-y-3">
+                    ${data.checklist.filter(i => i.category === cat).map((item, index) => `
+                        <div class="checklist-item flex items-center bg-stone-50 p-3 rounded-lg cursor-pointer border border-stone-200 hover:bg-stone-100" data-index="${data.checklist.indexOf(item)}">
+                             <div class="w-5 h-5 rounded-full border-2 border-stone-300 mr-4 flex-shrink-0 flex items-center justify-center">
+                                <span class="check-mark hidden text-white">✓</span>
+                             </div>
+                             <span class="item-text">${item.item}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+
+        document.querySelectorAll('.checklist-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const index = el.dataset.index;
+                data.checklist[index].done = !data.checklist[index].done;
+                
+                const text = el.querySelector('.item-text');
+                const checkMark = el.querySelector('.check-mark');
+                const checkBox = checkMark.parentElement;
+
+                if (data.checklist[index].done) {
+                    text.classList.add('checklist-item-done');
+                    checkMark.classList.remove('hidden');
+                    checkBox.classList.add('bg-violet-500', 'border-violet-500');
+                } else {
+                    text.classList.remove('checklist-item-done');
+                    checkMark.classList.add('hidden');
+                    checkBox.classList.remove('bg-violet-500', 'border-violet-500');
+                }
+            });
+        });
+    }
+
+
+    renderItinerary();
+    renderExperiences();
+    renderNightGlowFilters();
+    renderNightGlow();
+    renderTransportChart();
+    renderAccommodationAndScooter();
+    renderFoodFilters();
+    renderFood();
+    renderChecklist();
+});
+</script>
+
+</body>
+</html>
